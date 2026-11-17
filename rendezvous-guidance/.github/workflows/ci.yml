@@ -1,0 +1,42 @@
+name: Rendezvous Guidance CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Run Tests and Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pytest with coverage
+        run: |
+          pytest tests/ -v --cov=rendezvous_guidance --cov-report=term-missing
+
+      - name: Run flake8 linting
+        run: |
+          flake8 --max-line-length=88 --ignore=E501,W503 rendezvous_guidance/
+
+      - name: Check formatting with black
+        run: |
+          black --check rendezvous_guidance/ tests/
+
+      - name: Verify pytest passes
+        run: |
+          pytest tests/ -v
